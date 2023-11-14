@@ -13,7 +13,8 @@ template <typename T>
 class MyVector{
     public:
         // default constructor
-        MyVector(size_t capacity=2) : capacity_(capacity) {
+        MyVector(size_t capacity=2) : 
+                capacity_(capacity) {
             std::cout<<"Constructor called"<<std::endl;
             vec_ = new T[capacity_];
         }
@@ -25,55 +26,52 @@ class MyVector{
         }
 
         // copy constructor (deep copy)
-        MyVector(const MyVector& other_vec) : size_(other_vec.size_), capacity_(other_vec.capacity_) {
+        MyVector(const MyVector& other_vec) :
+                size_(other_vec.size_),
+                capacity_(other_vec.capacity_) {
             std::cout<<"Copy Constructor called"<<std::endl;
             vec_ = new T[size_];
             memcpy(vec_, other_vec.vec_, sizeof(T)*size_);
         }
 
         //move constructor
-         MyVector(MyVector&& other_vec) noexcept : size_(other_vec.size_), capacity_(other_vec.capacity_) {
+         MyVector(MyVector&& other_vec) noexcept :
+                size_(std::move(other_vec.size_)),
+                capacity_(std::move(other_vec.capacity_)) {
             std::cout<<"Move Constructor called"<<std::endl;
-            vec_ = new T[size_];
-            memcpy(vec_, other_vec.vec_, sizeof(T)*size_);
+            vec_ = std::move(other_vec.vec_);
             other_vec.vec_ = nullptr;
-            other_vec.capacity_ = 0;
-            other_vec.size_ = 0;
         }
 
         // copy assignment
         MyVector& operator= (const MyVector& other_vec) {
             std::cout<<"Copy Assignment called"<<std::endl;
             // detect self assignment
-            if (&other_vec == this) {
-                return *this; 
+            if (&other_vec != this) {
+                delete[] vec_;
+                size_ = other_vec.size_;
+                capacity_ = other_vec.capacity_;
+                vec_ = new T[size_];
+                memcpy(vec_, other_vec.vec_, sizeof(T)*size_);
             }
-            delete[] vec_;
-             size_ = other_vec.size_;
-            capacity_ = other_vec.capacity_;
-            vec_ = new T[size_];
-            memcpy(vec_, other_vec.vec_, sizeof(T)*size_);
             return *this;
         }
 
         //move assignment
         MyVector& operator= (MyVector&& other_vec) noexcept {
             std::cout<<"Move Assignment called"<<std::endl;
-            if (&other_vec == this) {
-                return *this; 
+            // detect self assignment
+            if (&other_vec != this) {
+                delete[] vec_;
+                size_ = std::move(other_vec.size_);
+                capacity_ = std::move(other_vec.capacity_);
+                vec_ = std::move(other_vec.vec_);
+                other_vec.vec_ = nullptr;
             }
-            delete[] vec_;
-             size_ = other_vec.size_;
-            capacity_ = other_vec.capacity_;
-            vec_ = new T[size_];
-            memcpy(vec_, other_vec.vec_, sizeof(T)*size_);
-            other_vec.vec_ = nullptr;
-            other_vec.capacity_ = 0;
-            other_vec.size_ = 0;
             return *this;
         }
 
-        void push_back(const T& val) {
+        void push_back(const T& val) noexcept {
             if (size_ == capacity_) {
                resize();
             }
@@ -81,11 +79,11 @@ class MyVector{
             size_++;
         }
 
-        constexpr size_t size() const {
+        constexpr size_t size() const noexcept {
             return size_;
         }
 
-        constexpr size_t capacity() const {
+        constexpr size_t capacity() const noexcept {
             return capacity_;
         }
 
@@ -94,18 +92,18 @@ class MyVector{
         const T& operator[] (size_t index) const { return vec_[index]; };
 
         // used for for range loops:
-        constexpr T* begin() const {
+        constexpr T* begin() const noexcept {
             return vec_;
         }
 
-        constexpr T* end() const {
+        constexpr T* end() const noexcept {
             return vec_ + size();
         }
 
      private:
-        T* vec_{nullptr};
         size_t size_{0};
         size_t capacity_{0};
+        T* vec_{nullptr};
 
         void resize() {
             capacity_*=2;
