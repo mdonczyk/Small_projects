@@ -36,10 +36,13 @@ class MyVector{
 
         //move constructor
          MyVector(MyVector&& other_vec) noexcept :
-                size_(std::move(other_vec.size_)),
-                capacity_(std::move(other_vec.capacity_)) {
+                size_(other_vec.size_),
+                capacity_(other_vec.capacity_) {
             std::cout<<"Move Constructor called"<<std::endl;
-            vec_ = std::move(other_vec.vec_);
+            vec_ = other_vec.vec_;
+            
+            other_vec.size_ = 0;
+            other_vec.capacity_ = 0;
             other_vec.vec_ = nullptr;
         }
 
@@ -63,9 +66,12 @@ class MyVector{
             // detect self assignment
             if (&other_vec != this) {
                 delete[] vec_;
-                size_ = std::move(other_vec.size_);
-                capacity_ = std::move(other_vec.capacity_);
-                vec_ = std::move(other_vec.vec_);
+                size_ = other_vec.size_;
+                capacity_ = other_vec.capacity_;
+                vec_ = other_vec.vec_;
+
+                other_vec.size_ = 0;
+                other_vec.capacity_ = 0;
                 other_vec.vec_ = nullptr;
             }
             return *this;
